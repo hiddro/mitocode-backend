@@ -4,11 +4,10 @@ import com.mitocode.function.Employee;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Comparator;
-import java.util.DoubleSummaryStatistics;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AppStream {
 
@@ -90,6 +89,94 @@ public class AppStream {
         System.out.println("Sum = " + stats.getSum());
     }
 
+    public void m8getDistinct(List<Employee> list){
+        list.stream()
+                .distinct()
+                .forEach(System.out::println);
+    }
+
+    public void m9getCount(List<Employee> list){
+        Predicate<Employee> isAdult = e -> Period.between(e.getBirthDate(), LocalDate.now()).getYears() >= 18;
+
+        long count = list.stream()
+                .filter(isAdult)
+                .count();
+
+        System.out.println("count = " + count);
+    }
+
+    public void m10SkipLimit(List<Employee> list){
+        list.stream()
+                .skip(4)
+                .limit(2)
+                .forEach(System.out::println);
+    }
+
+    public void m11getAnyYounger(List<Employee> list){
+        Predicate<Employee> isYounger = e -> Period.between(e.getBirthDate(), LocalDate.now()).getYears() < 18;
+
+        boolean rpta = list.stream()
+                        .anyMatch(isYounger);
+
+        System.out.println("rpta = " + rpta);
+    }
+
+    public void m12Map(List<Employee> list){ //transforma de 1 a 1
+        list.stream()
+                .map(e -> {
+                    e.setSalary(e.getSalary() * 1.10);
+                    return e.getSalary();
+                })
+                .forEach(System.out::println);
+    }
+
+    public void m13FlatMap(List<Employee> list){ //transforma de 1 a muchos
+        list.stream()
+                .flatMap(e -> {
+                    e.setSalary(e.getSalary() * 1.10);
+                    return Stream.of(e.getSalary());
+                })
+                .forEach(System.out::println);
+    }
+
+    public void m14Peek(List<Employee> list){
+        list.stream()
+                .filter(e -> e.getSalary() > 3000)
+                .peek(System.out::println)
+                .collect(Collectors.toList());
+    }
+
+    public void m15GroupBy(List<Employee> list){
+        Map<String, Map<String, List<Employee>>> byDepartment = list.stream() // para un solo groubgy es Map<String, List<Employee>>
+                .collect(Collectors.groupingBy(Employee::getDepartment, Collectors.groupingBy(Employee::getJob)));
+//                .collect(Collectors.groupingBy(Employee::getDepartment)); //e -> e.getDepartment()
+
+        System.out.println("byDepartment = " + byDepartment);
+    }
+
+    public void m16MapToSet(List<Employee> list){
+        Map<Integer, String> map =  list.stream()
+                .collect(Collectors.toMap(Employee::getIdEmployee, Employee::getName));
+
+//        Set<Employee> set = list.stream()
+//                .collect(Collectors.toSet());
+//        Set<Employee> set = new HashSet<>(list);
+
+        System.out.println(map.keySet());
+        System.out.println(map.values());
+        map.entrySet().forEach(System.out::println); // o con stream y ya usamos los otros metodos en caso se requiera
+    }
+
+    public void m17Order(List<Employee> list){
+        list.stream()
+                .sorted(Comparator.comparing(Employee::getIdEmployee).reversed())
+                .forEach(System.out::println);
+
+        Stream.of(1,2,3,4,5)
+                .sorted(Comparator.reverseOrder())
+                .forEach(System.out::println);
+    }
+
     public static void main(String[] args) {
         AppStream app = new AppStream();
 
@@ -103,9 +190,10 @@ public class AppStream {
         Employee e8 = new Employee(8, "Mito8", "Senior Developer", LocalDate.of(1996, 7, 1), 7000.00, "TI");
         Employee e9 = new Employee(9, "Mito9", "Junior Developer", LocalDate.of(2005, 8, 1), 500.00, "TI");
         Employee e10 = new Employee(10, "Mito10", "Mobile Developer", LocalDate.of(1975, 9, 1), 3000.00, "TI");
+        Employee e11 = new Employee(11, "Mito11", "Salesman", LocalDate.of(1975, 9, 1), 6000.00, "Comercial");
 
-        List<Employee> list = List.of(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10);
+        List<Employee> list = List.of(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11);
 //        app.m1GetDevelopers(list, "Developer");
-        app.m7GetSummary(list);
+        app.m17Order(list);
     }
 }
